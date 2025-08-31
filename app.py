@@ -8,20 +8,22 @@ import os
 def handler(event, context):
     
     try:
-        # Parse the event payload to extract the CSV data
-        if isinstance(event, str):
-            # If event is a string, try to parse it as JSON
-            payload = json.loads(event)
+        if isinstance(event, dict):
+            # If event is a dict, we're on AWS Lambda
+            # Parse the body of the request from the 'body' field
+            # https://docs.aws.amazon.com/lambda/latest/dg/urls-invocation.html
+            # TODO: why is a double json.loads needed here?
+            body = json.loads(json.loads(event['body']))
         else:
-            # If event is already a dict, use it directly
-            payload = event
-        
-        # Extract the CSV data from the payload
-        csv_data = payload.get('input', '')
+            # For local testing, just parse the JSON event string
+            body = json.loads(event)
+
+        # Extract the CSV data from the 'input' field
+        csv_data = body['input']
 
     except Exception as e:
         # Handle parsing errors gracefully
-        return f"Error parsing input: {str(e)}"
+        return f"Error parsing input: {str(e)}\nBody: {body}"
     
     # Create temporary file for input
     with tempfile.NamedTemporaryFile(mode='w', suffix='.csv', delete=False) as input_file:

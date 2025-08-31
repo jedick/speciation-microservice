@@ -42,7 +42,7 @@ docker push 111222333444.dkr.ecr.us-east-2.amazonaws.com/worm-speciate:latest
 
 5. Create an execution role for the function, if you don't already have one. 
 
-- Prereq: Add policy that allows the iam:CreateRole action (name: IAMCreateRole)
+- Prereq: Add policy that allows the iam:CreateRole action
 - NOTE: After creating the role, add AWSLambdaBasicExecutionRole policy to enable CloudWatch metrics
 
 ```sh
@@ -59,7 +59,7 @@ aws iam create-role \
 
 6. Create the Lambda function.
 
-- Prereq: Add policy that allows the iam:PassRole action (name: IAMPassRole)
+- Prereq: Add policy that allows the iam:PassRole action
 
 ```sh
 aws lambda create-function \
@@ -68,7 +68,7 @@ aws lambda create-function \
   --code ImageUri=111222333444.dkr.ecr.us-east-2.amazonaws.com/worm-speciate:latest \
   --role arn:aws:iam::111222333444:role/lambda-ex \
   --memory-size 2048 \
-  --timeout 60
+  --timeout 300
 ```
 
 - Result:
@@ -116,7 +116,16 @@ Max memory used
     273 MB
 ```
 
-9. Updating function
+9. Add Function URL
+
+In AWS Console: Lambda > Functions > worm-speciate:
+- Select "Configuration", then "Function URL"
+- Press "Create function URL"
+- Select NONE for Auth type to allow public access
+
+10. Updating the function
+
+Before doing this, re-run docker login (step 3).
 
 ```sh
 docker tag worm-speciate:latest 111222333444.dkr.ecr.us-east-2.amazonaws.com/worm-speciate:latest
