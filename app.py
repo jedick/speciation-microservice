@@ -2,8 +2,8 @@ import AqEquil
 import tempfile
 import json
 import os
-import pickle
-import base64
+#import pickle
+#import base64
 
 def handler(event, context):
     
@@ -49,19 +49,20 @@ def handler(event, context):
         os.unlink(input_file.name)
         
         # Process the output data
-        #if hasattr(speciation, 'report'):
-        #    # Convert speciation.report (a pandas DataFrame) to CSV string
-        #    return speciation.report.to_csv(index = False)
-        #else:
-        #    return "Error: Could not retrieve speciation results"
+        if hasattr(speciation, 'report'):
+            # Convert speciation.report (a pandas DataFrame) to CSV string
+            return speciation.report.to_csv(index = False)
+        else:
+            return "Error: Could not retrieve speciation results"
 
-        # Drop the batch_3o attribute (speciation results in R format) so our pickle doesn't depend on rpy2/R
-        del speciation.batch_3o
-        # Serialize the object using pickle
-        pickled_data = pickle.dumps(speciation)
-        # Encode the pickled data into Base64
-        encoded_data = base64.b64encode(pickled_data).decode('utf-8')
-        return encoded_data
+        ## For returning entire speciation object (not used)
+        ## Drop the batch_3o attribute (speciation results in R format) so our pickle doesn't depend on rpy2/R
+        #del speciation.batch_3o
+        ## Serialize the object using pickle
+        #pickled_data = pickle.dumps(speciation)
+        ## Encode the pickled data into Base64
+        #encoded_data = base64.b64encode(pickled_data).decode('utf-8')
+        #return encoded_data
         
     except Exception as e:
         # Clean up temporary file on error
