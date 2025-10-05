@@ -2,8 +2,8 @@ import AqEquil
 import tempfile
 import json
 import os
-#import pickle
-#import base64
+import pickle
+import base64
 
 def handler(event, context):
     
@@ -46,29 +46,35 @@ def handler(event, context):
             report_filename=None,
             delete_generated_folders=True
         )
-        
+
         # Clean up temporary input file
         os.unlink(input_file.name)
         
         # Process the output data
         if hasattr(speciation, 'report'):
             # Convert speciation.report (a pandas DataFrame) to CSV string
-            return speciation.report.to_csv(index = False)
+            report_csv = speciation.report.to_csv(index = False)
+            #return report_csv
+
+            # Create a scatterplot of pH and Temperature
+            # Use plot_out to return a plotly figure object
+            plot_output = speciation.scatterplot('pH', 'Temperature', plot_out=True)
+            # Serialize the object using pickle
+            plot_pickled = pickle.dumps(plot_output)
+            # Encode the pickled data into Base64, then convert it to a string
+            plot_encoded = base64.b64encode(plot_pickled).decode('utf-8')
+
+            ## TODO: return both report_csv and plot_output
+            return report_csv, plot_encoded
         else:
             return "Error: Could not retrieve speciation results"
 
-        ## For returning entire speciation object (not used)
-        ## Drop the batch_3o attribute (speciation results in R format) so our pickle doesn't depend on rpy2/R
-        #del speciation.batch_3o
-        ## Serialize the object using pickle
-        #pickled_data = pickle.dumps(speciation)
-        ## Encode the pickled data into Base64
-        #encoded_data = base64.b64encode(pickled_data).decode('utf-8')
-        #return encoded_data
-        
     except Exception as e:
-        # Clean up temporary file on error
-        os.unlink(input_file.name)
+        try:
+            # Clean up temporary file on error
+            os.unlink(input_file.name)
+        except:
+            pass
         
         return f'Speciation calculation failed: {str(e)}'
 
